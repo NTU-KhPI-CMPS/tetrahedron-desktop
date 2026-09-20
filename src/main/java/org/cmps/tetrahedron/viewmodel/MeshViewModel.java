@@ -165,6 +165,21 @@ public class MeshViewModel {
                 meshStatus.set(MeshStatus.SUCCESS);
                 modelController.clearModel();
                 modelController.initModelData(tetraModelApi);
+                
+                if (tetraModelApi.elementLayers() != null) {
+                    int[] layers = tetraModelApi.elementLayers();
+                    int min = Integer.MAX_VALUE;
+                    int max = Integer.MIN_VALUE;
+                    List<Float> values = new ArrayList<>(layers.length);
+                    for (int layer : layers) {
+                        if (layer < min) min = layer;
+                        if (layer > max) max = layer;
+                        values.add((float) layer);
+                    }
+                    LegendData.getInstance().updateValuesRange(min, max);
+                    modelController.setValuesToDisplay(values);
+                }
+
                 nodesCount.set(String.valueOf(tetraModelApi.coordinates().size()));
                 elementsCount.set(String.valueOf(tetraModelApi.indices().length));
             });
