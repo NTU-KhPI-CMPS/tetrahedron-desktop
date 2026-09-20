@@ -6,7 +6,7 @@
 
     <groupId>org.cmps.tetrahedron</groupId>
     <artifactId>tetrahedron-desktop</artifactId>
-    <version>7.0.0-SNAPSHOT</version>
+    <version>7.1.0-SNAPSHOT</version>
 
     <properties>
         <java.version>25</java.version>

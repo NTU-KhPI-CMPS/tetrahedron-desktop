@@ -3,7 +3,7 @@
 set -e
 
 CERT_NAME=""
-APP_VERSION="7.0.0"
+APP_VERSION="7.1.0"
 
 cd ../dist
 
