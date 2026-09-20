@@ -100,8 +100,7 @@ public class StlToTetraMesh {
 
             try {
                 loadStl(arena, inputStl, ierr, logger);
-                runCadRemeshing2d(arena, ierr, inputStl, minMeshSize, maxMeshSize, angleToFindSurfaces,
-                                  logger);
+                runCadRemeshing2d(arena, ierr, inputStl, minMeshSize, maxMeshSize, angleToFindSurfaces, logger);
 
                 Map<Integer, float[]> finalCoords = exportNodes(arena, ierr, logger);
                 int[][] finalIndices = exportTriangles(arena, ierr, logger);
@@ -137,6 +136,50 @@ public class StlToTetraMesh {
 
             try {
                 loadStl(arena, inputStl, ierr, logger);
+                Map<Integer, float[]> coordinates = exportNodes(arena, ierr, logger);
+                int[][] indices = exportTriangles(arena, ierr, logger);
+                Pair<Double, Double> minMaxMeshSize = recommendedMeshSize(coordinates);
+                return TetraModelApi.builder()
+                                    .coordinates(coordinates)
+                                    .indices(indices)
+                                    .minMeshSize(minMaxMeshSize.getKey())
+                                    .maxMeshSize(minMaxMeshSize.getValue())
+                                    .build();
+            } finally {
+                logPoller.interrupt();
+                try {
+                    logPoller.join(1000);
+                } catch (InterruptedException ignored) {
+                }
+                Gmsh.gmshLoggerStop(ierr);
+                Gmsh.gmshFinalize(ierr);
+            }
+        }
+    }
+
+    public static TetraModelApi extractMultiLayerStepData(String inputStepFile, Consumer<String> logger) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment ierr = arena.allocate(JAVA_INT);
+            gmshInit(arena, ierr, logger);
+            Thread logPoller = startGmshLoggerPoller(ierr, logger);
+
+            try {
+                Gmsh.gmshModelAdd(arena.allocateFrom("MultiLayer_Preview"), ierr);
+                boolean hasStep = false;
+                if (logger != null) logger.accept("Loading file: " + inputStepFile);
+                Gmsh.gmshMerge(arena.allocateFrom(inputStepFile), ierr);
+                if (ierr.get(JAVA_INT, 0) != 0) {
+                    throw new RuntimeException("error-loading-file");
+                }
+                if (inputStepFile.toLowerCase().endsWith(".step") || inputStepFile.toLowerCase().endsWith(".stp")) {
+                    hasStep = true;
+                }
+
+                if (hasStep) {
+                    Gmsh.gmshModelOccSynchronize(ierr);
+                    Gmsh.gmshModelMeshGenerate(2, ierr);
+                }
+
                 Map<Integer, float[]> coordinates = exportNodes(arena, ierr, logger);
                 int[][] indices = exportTriangles(arena, ierr, logger);
                 Pair<Double, Double> minMaxMeshSize = recommendedMeshSize(coordinates);
@@ -265,8 +308,8 @@ public class StlToTetraMesh {
         MemorySegment parametricCoordPtr = arena.allocate(ADDRESS);
         MemorySegment parametricCoord_n = arena.allocate(JAVA_LONG);
 
-        Gmsh.gmshModelMeshGetNodes(nodeTagsPtr, nodeTags_n, coordsPtr, coords_n, parametricCoordPtr,
-                                   parametricCoord_n, -1, -1, 0, 0, ierr);
+        Gmsh.gmshModelMeshGetNodes(nodeTagsPtr, nodeTags_n, coordsPtr, coords_n, parametricCoordPtr, parametricCoord_n,
+                                   -1, -1, 0, 0, ierr);
 
         long numNodes = nodeTags_n.get(JAVA_LONG, 0);
         MemorySegment nodeTagsArray = nodeTagsPtr.get(ADDRESS, 0).reinterpret(numNodes * 8);
@@ -299,10 +342,8 @@ public class StlToTetraMesh {
         MemorySegment elementNodeTags_n = arena.allocate(ADDRESS);
         MemorySegment elementNodeTags_nn = arena.allocate(JAVA_LONG);
 
-        Gmsh.gmshModelMeshGetElements(elementTypePtr, elementType_n,
-                                      elementTagsPtr, elementTags_n, elementTags_nn,
-                                      elementNodeTagsPtr, elementNodeTags_n, elementNodeTags_nn,
-                                      2, -1, ierr);
+        Gmsh.gmshModelMeshGetElements(elementTypePtr, elementType_n, elementTagsPtr, elementTags_n, elementTags_nn,
+                                      elementNodeTagsPtr, elementNodeTags_n, elementNodeTags_nn, 2, -1, ierr);
 
         long numTypes = elementType_n.get(JAVA_LONG, 0);
         MemorySegment elemTypesArray = elementTypePtr.get(ADDRESS, 0).reinterpret(numTypes * 4);
@@ -517,8 +558,8 @@ public class StlToTetraMesh {
     }
 
     private static void rebuildDiscreteModel(Arena arena, MemorySegment ierr, List<List<Integer>> shells,
-                                             List<long[]> triangles, Map<Long, double[]> nodeCoords,
-                                             double minMeshSize, double maxMeshSize, Consumer<String> logger) {
+                                             List<long[]> triangles, Map<Long, double[]> nodeCoords, double minMeshSize,
+                                             double maxMeshSize, Consumer<String> logger) {
         Gmsh.gmshClear(ierr);
         Gmsh.gmshModelAdd(arena.allocateFrom("STL_Converter"), ierr);
         Gmsh.gmshOptionSetNumber(arena.allocateFrom("Mesh.Algorithm3D"), 10.0, ierr); // HXT algorithm
@@ -604,9 +645,8 @@ public class StlToTetraMesh {
     }
 
     private static void runCadRemeshing(Arena arena, MemorySegment ierr, String inputStl,
-                                        Map<Long, double[]> nodeCoords,
-                                        double minMeshSize, double maxMeshSize, double angleToFindSurfaces,
-                                        Consumer<String> logger) {
+                                        Map<Long, double[]> nodeCoords, double minMeshSize, double maxMeshSize,
+                                        double angleToFindSurfaces, Consumer<String> logger) {
         double initialMin = minMeshSize;
         double initialMax = maxMeshSize;
         boolean success = false;
@@ -666,8 +706,8 @@ public class StlToTetraMesh {
                     throw new RuntimeException(LocalizationController.getInstance()
                                                                      .getString(
                                                                              LocalizationController.ERROR_DIALOG_BUNDLE,
-                                                                             "mesh-error-with-error-code")
-                                                       + ": " + ierr.get(JAVA_INT, 0) + ".");
+                                                                             "mesh-error-with-error-code") + ": " + ierr.get(
+                            JAVA_INT, 0) + ".");
                 }
 
                 Gmsh.gmshModelMeshOptimize(arena.allocateFrom("Netgen"), 0, 1, MemorySegment.NULL, 0, ierr);
@@ -687,9 +727,8 @@ public class StlToTetraMesh {
         }
     }
 
-    private static void runCadRemeshing2d(Arena arena, MemorySegment ierr, String inputStl,
-                                          double minMeshSize, double maxMeshSize, double angleToFindSurfaces,
-                                          Consumer<String> logger) {
+    private static void runCadRemeshing2d(Arena arena, MemorySegment ierr, String inputStl, double minMeshSize,
+                                          double maxMeshSize, double angleToFindSurfaces, Consumer<String> logger) {
         double initialMin = minMeshSize;
         double initialMax = maxMeshSize;
         boolean success = false;
@@ -727,8 +766,8 @@ public class StlToTetraMesh {
                     throw new RuntimeException(LocalizationController.getInstance()
                                                                      .getString(
                                                                              LocalizationController.ERROR_DIALOG_BUNDLE,
-                                                                             "mesh-error-with-error-code")
-                                                       + ": " + ierr.get(JAVA_INT, 0) + ".");
+                                                                             "mesh-error-with-error-code") + ": " + ierr.get(
+                            JAVA_INT, 0) + ".");
                 }
 
                 Gmsh.gmshModelMeshOptimize(arena.allocateFrom("Netgen"), 0, 1, MemorySegment.NULL, 0, ierr);
@@ -757,8 +796,8 @@ public class StlToTetraMesh {
         MemorySegment parametricCoordPtr = arena.allocate(ADDRESS);
         MemorySegment parametricCoord_n = arena.allocate(JAVA_LONG);
 
-        Gmsh.gmshModelMeshGetNodes(nodeTagsPtr, nodeTags_n, coordsPtr, coords_n, parametricCoordPtr,
-                                   parametricCoord_n, -1, -1, 0, 0, ierr);
+        Gmsh.gmshModelMeshGetNodes(nodeTagsPtr, nodeTags_n, coordsPtr, coords_n, parametricCoordPtr, parametricCoord_n,
+                                   -1, -1, 0, 0, ierr);
 
         long numNodes = nodeTags_n.get(JAVA_LONG, 0);
         MemorySegment nodeTagsArray = nodeTagsPtr.get(ADDRESS, 0).reinterpret(numNodes * 8);
@@ -792,10 +831,8 @@ public class StlToTetraMesh {
         MemorySegment finalNodeTags_n = arena.allocate(ADDRESS);
         MemorySegment finalNodeTags_nn = arena.allocate(JAVA_LONG);
 
-        Gmsh.gmshModelMeshGetElements(finalTypePtr, finalType_n,
-                                      finalTagsPtr, finalTags_n, finalTags_nn,
-                                      finalNodeTagsPtr, finalNodeTags_n, finalNodeTags_nn,
-                                      3, -1, ierr);
+        Gmsh.gmshModelMeshGetElements(finalTypePtr, finalType_n, finalTagsPtr, finalTags_n, finalTags_nn,
+                                      finalNodeTagsPtr, finalNodeTags_n, finalNodeTags_nn, 3, -1, ierr);
 
         long finalTypes = finalType_n.get(JAVA_LONG, 0);
         MemorySegment finalTypesArray = finalTypePtr.get(ADDRESS, 0).reinterpret(finalTypes * 4);
@@ -849,10 +886,8 @@ public class StlToTetraMesh {
         MemorySegment elementNodeTags_n = arena.allocate(ADDRESS);
         MemorySegment elementNodeTags_nn = arena.allocate(JAVA_LONG);
 
-        Gmsh.gmshModelMeshGetElements(elementTypePtr, elementType_n,
-                                      elementTagsPtr, elementTags_n, elementTags_nn,
-                                      elementNodeTagsPtr, elementNodeTags_n, elementNodeTags_nn,
-                                      2, -1, ierr);
+        Gmsh.gmshModelMeshGetElements(elementTypePtr, elementType_n, elementTagsPtr, elementTags_n, elementTags_nn,
+                                      elementNodeTagsPtr, elementNodeTags_n, elementNodeTags_nn, 2, -1, ierr);
 
         long numTypes = elementType_n.get(JAVA_LONG, 0);
         MemorySegment elemTypesArray = elementTypePtr.get(ADDRESS, 0).reinterpret(numTypes * 4);
@@ -895,5 +930,389 @@ public class StlToTetraMesh {
 
         if (logger != null) logger.accept(String.format("Triangles exported! Count: %d\n", totalElems));
         return indices;
+    }
+
+    public static TetraModelApi generateStepMultiLayerMesh(List<String> stepFiles, double minMeshSize,
+                                                           double maxMeshSize, double angleToFindSurfaces,
+                                                           Consumer<String> logger) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment ierr = arena.allocate(JAVA_INT);
+            gmshInit(arena, ierr, logger);
+            Thread logPoller = startGmshLoggerPoller(ierr, logger);
+
+            try {
+                Gmsh.gmshClear(ierr);
+                Gmsh.gmshModelAdd(arena.allocateFrom("STEP_MultiLayer"), ierr);
+
+                for (String stepFile : stepFiles) {
+                    if (logger != null) logger.accept("Loading STEP file: " + stepFile);
+                    Gmsh.gmshMerge(arena.allocateFrom(stepFile), ierr);
+                    if (ierr.get(JAVA_INT, 0) != 0) {
+                        throw new RuntimeException("error-loading-step");
+                    }
+                }
+
+                MemorySegment dimTagsPtr = arena.allocate(ADDRESS);
+                MemorySegment dimTags_n = arena.allocate(JAVA_LONG);
+                Gmsh.gmshModelGetEntities(dimTagsPtr, dimTags_n, 3, ierr);
+
+                long numVols = dimTags_n.get(JAVA_LONG, 0) / 2;
+                if (logger != null)
+                    logger.accept("Found " + numVols + " volume(s) in STEP file(s). Applying Boolean Fragments...");
+
+                if (numVols > 0) {
+                    MemorySegment objectDimTags = dimTagsPtr.get(ADDRESS, 0).reinterpret(numVols * 2 * 4);
+                    MemorySegment toolDimTags = arena.allocate(JAVA_INT, 0);
+
+                    MemorySegment outDimTagsPtr = arena.allocate(ADDRESS);
+                    MemorySegment outDimTags_n = arena.allocate(JAVA_LONG);
+                    MemorySegment outDimTagsMapPtr = arena.allocate(ADDRESS);
+                    MemorySegment outDimTagsMap_n = arena.allocate(ADDRESS);
+                    MemorySegment outDimTagsMap_nn = arena.allocate(JAVA_LONG);
+
+                    Gmsh.gmshModelOccFragment(objectDimTags, numVols, toolDimTags, 0, outDimTagsPtr, outDimTags_n,
+                                              outDimTagsMapPtr, outDimTagsMap_n, outDimTagsMap_nn, -1, 1, 1, ierr);
+
+                    Gmsh.gmshModelOccSynchronize(ierr);
+                } else {
+                    Gmsh.gmshModelOccSynchronize(ierr);
+                }
+
+                Gmsh.gmshModelGetEntities(dimTagsPtr, dimTags_n, 3, ierr);
+                long newNumVols = dimTags_n.get(JAVA_LONG, 0) / 2;
+                List<Integer> volumeTags = new ArrayList<>();
+                if (newNumVols > 0) {
+                    MemorySegment newDimTags = dimTagsPtr.get(ADDRESS, 0).reinterpret(newNumVols * 2 * 4);
+                    for (long i = 0; i < newNumVols; i++) {
+                        volumeTags.add(newDimTags.getAtIndex(JAVA_INT, i * 2 + 1));
+                    }
+                }
+
+                if (minMeshSize > 0)
+                    Gmsh.gmshOptionSetNumber(arena.allocateFrom("Mesh.MeshSizeMin"), minMeshSize, ierr);
+                if (maxMeshSize > 0)
+                    Gmsh.gmshOptionSetNumber(arena.allocateFrom("Mesh.MeshSizeMax"), maxMeshSize, ierr);
+                Gmsh.gmshOptionSetNumber(arena.allocateFrom("Mesh.Algorithm3D"), 1.0, ierr);
+
+                if (logger != null) logger.accept("Generating conformal 3D tetrahedral mesh for STEP...");
+                Gmsh.gmshModelMeshGenerate(3, ierr);
+                if (ierr.get(JAVA_INT, 0) != 0) {
+                    throw new RuntimeException("mesh-error-with-error-code: " + ierr.get(JAVA_INT, 0));
+                }
+
+                Gmsh.gmshModelMeshOptimize(arena.allocateFrom("Netgen"), 0, 1, MemorySegment.NULL, 0, ierr);
+
+                Map<Integer, float[]> finalCoords = exportNodes(arena, ierr, logger);
+                Pair<int[][], int[]> finalElements = exportTetrahedronsMultiLayer(arena, ierr, volumeTags);
+
+                if (logger != null) logger.accept(
+                        String.format("Multi-layer mesh finished successfully! Nodes: %d, Elements: %d, Layers: %d\n",
+                                      finalCoords.size(), finalElements.getKey().length, volumeTags.size()));
+
+                return TetraModelApi.builder()
+                                    .coordinates(finalCoords)
+                                    .indices(finalElements.getKey())
+                                    .dimension(Dimension.THREE_D)
+                                    .elementLayers(finalElements.getValue())
+                                    .build();
+            } finally {
+                logPoller.interrupt();
+                try {
+                    logPoller.join(1000);
+                } catch (InterruptedException ignored) {
+                }
+                Gmsh.gmshLoggerStop(ierr);
+                Gmsh.gmshFinalize(ierr);
+            }
+        }
+    }
+
+    public static TetraModelApi generateMultiLayerMesh(List<String> inputStls, double minMeshSize, double maxMeshSize,
+                                                       double angleToFindSurfaces, double tolerance,
+                                                       Consumer<String> logger) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment ierr = arena.allocate(JAVA_INT);
+            gmshInit(arena, ierr, logger);
+            Thread logPoller = startGmshLoggerPoller(ierr, logger);
+
+            try {
+                if (logger != null) logger.accept("Analyzing multi-layer topology...");
+
+                List<Map<Integer, float[]>> allCoords = new ArrayList<>();
+                List<int[][]> allIndices = new ArrayList<>();
+
+                for (String stl : inputStls) {
+                    Gmsh.gmshClear(ierr);
+                    Gmsh.gmshModelAdd(arena.allocateFrom("Temp_STL"), ierr);
+                    Gmsh.gmshMerge(arena.allocateFrom(stl), ierr);
+                    if (ierr.get(JAVA_INT, 0) != 0) {
+                        throw new RuntimeException("error-loading-stl");
+                    }
+                    allCoords.add(exportNodes(arena, ierr, null));
+                    allIndices.add(exportTriangles(arena, ierr, null));
+                }
+
+                long gridFactor = (long) (1.0 / (tolerance > 0 ? tolerance : 1e-5));
+                double tol = tolerance > 0 ? tolerance : 1e-5;
+                Map<String, List<Integer>> grid = new HashMap<>();
+                Map<Integer, float[]> unifiedCoords = new HashMap<>();
+                int nextNodeId = 1;
+
+                List<int[][]> unifiedIndices = new ArrayList<>();
+
+                for (int i = 0; i < inputStls.size(); i++) {
+                    Map<Integer, float[]> coords = allCoords.get(i);
+                    int[][] indices = allIndices.get(i);
+                    int[][] uIndices = new int[indices.length][3];
+
+                    Map<Integer, Integer> localToGlobal = new HashMap<>();
+
+                    for (Map.Entry<Integer, float[]> entry : coords.entrySet()) {
+                        float[] c = entry.getValue();
+                        long gx = Math.round(c[0] * gridFactor);
+                        long gy = Math.round(c[1] * gridFactor);
+                        long gz = Math.round(c[2] * gridFactor);
+
+                        int globalId = -1;
+                        outer:
+                        for (long dx = -1; dx <= 1; dx++) {
+                            for (long dy = -1; dy <= 1; dy++) {
+                                for (long dz = -1; dz <= 1; dz++) {
+                                    String key = (gx + dx) + "_" + (gy + dy) + "_" + (gz + dz);
+                                    List<Integer> bucket = grid.get(key);
+                                    if (bucket != null) {
+                                        for (int id : bucket) {
+                                            float[] uc = unifiedCoords.get(id);
+                                            double dist = Math.sqrt(
+                                                    Math.pow(c[0] - uc[0], 2) + Math.pow(c[1] - uc[1], 2) + Math.pow(
+                                                            c[2] - uc[2], 2));
+                                            if (dist <= tol) {
+                                                globalId = id;
+                                                break outer;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (globalId == -1) {
+                            globalId = nextNodeId++;
+                            unifiedCoords.put(globalId, c);
+                            String key = gx + "_" + gy + "_" + gz;
+                            grid.computeIfAbsent(key, k -> new ArrayList<>()).add(globalId);
+                        }
+                        localToGlobal.put(entry.getKey(), globalId);
+                    }
+
+                    List<int[]> validIndices = new ArrayList<>();
+                    for (int j = 0; j < indices.length; j++) {
+                        int n1 = localToGlobal.get(indices[j][0]);
+                        int n2 = localToGlobal.get(indices[j][1]);
+                        int n3 = localToGlobal.get(indices[j][2]);
+                        if (n1 != n2 && n2 != n3 && n1 != n3) {
+                            validIndices.add(new int[]{n1, n2, n3});
+                        }
+                    }
+                    uIndices = validIndices.toArray(new int[0][3]);
+                    unifiedIndices.add(uIndices);
+                }
+
+                record TriangleKey(int n1, int n2, int n3) {
+                    public TriangleKey {
+                        int[] arr = {n1, n2, n3};
+                        Arrays.sort(arr);
+                        n1 = arr[0];
+                        n2 = arr[1];
+                        n3 = arr[2];
+                    }
+                }
+
+                Map<TriangleKey, Set<Integer>> triangleOwnership = new HashMap<>();
+                Map<TriangleKey, int[]> triangleVertices = new HashMap<>();
+
+                for (int layer = 0; layer < unifiedIndices.size(); layer++) {
+                    for (int[] tri : unifiedIndices.get(layer)) {
+                        TriangleKey key = new TriangleKey(tri[0], tri[1], tri[2]);
+                        triangleOwnership.computeIfAbsent(key, k -> new HashSet<>()).add(layer);
+                        triangleVertices.putIfAbsent(key, tri);
+                    }
+                }
+
+                Map<Set<Integer>, List<int[]>> surfaces = new HashMap<>();
+                for (Map.Entry<TriangleKey, Set<Integer>> entry : triangleOwnership.entrySet()) {
+                    surfaces.computeIfAbsent(entry.getValue(), k -> new ArrayList<>())
+                            .add(triangleVertices.get(entry.getKey()));
+                }
+
+                Gmsh.gmshClear(ierr);
+                Gmsh.gmshModelAdd(arena.allocateFrom("MultiLayerConformal"), ierr);
+
+                MemorySegment nodeTagsSeg = arena.allocate(JAVA_LONG, unifiedCoords.size());
+                MemorySegment coordSeg = arena.allocate(JAVA_DOUBLE, unifiedCoords.size() * 3L);
+                int nodeIdx = 0;
+                for (Map.Entry<Integer, float[]> entry : unifiedCoords.entrySet()) {
+                    nodeTagsSeg.setAtIndex(JAVA_LONG, nodeIdx, entry.getKey());
+                    coordSeg.setAtIndex(JAVA_DOUBLE, nodeIdx * 3L, entry.getValue()[0]);
+                    coordSeg.setAtIndex(JAVA_DOUBLE, nodeIdx * 3L + 1, entry.getValue()[1]);
+                    coordSeg.setAtIndex(JAVA_DOUBLE, nodeIdx * 3L + 2, entry.getValue()[2]);
+                    nodeIdx++;
+                }
+
+                // Add nodes to entity dim=2, tag=1 (dummy container)
+                Gmsh.gmshModelAddDiscreteEntity(2, 1, MemorySegment.NULL, 0, ierr);
+                Gmsh.gmshModelMeshAddNodes(2, 1, nodeTagsSeg, unifiedCoords.size(), coordSeg, unifiedCoords.size() * 3L,
+                                           MemorySegment.NULL, 0, ierr);
+
+                int surfaceTag = 2;
+                Map<Set<Integer>, Integer> surfaceTagMap = new HashMap<>();
+
+                for (Map.Entry<Set<Integer>, List<int[]>> entry : surfaces.entrySet()) {
+                    List<int[]> tris = entry.getValue();
+                    Gmsh.gmshModelAddDiscreteEntity(2, surfaceTag, MemorySegment.NULL, 0, ierr);
+
+                    MemorySegment elemTagsSeg = arena.allocate(JAVA_LONG, tris.size());
+                    MemorySegment elemNodesSeg = arena.allocate(JAVA_LONG, tris.size() * 3L);
+
+                    long baseTag = surfaceTag * 200000L;
+                    for (int i = 0; i < tris.size(); i++) {
+                        elemTagsSeg.setAtIndex(JAVA_LONG, i, baseTag + i);
+                        elemNodesSeg.setAtIndex(JAVA_LONG, i * 3L, tris.get(i)[0]);
+                        elemNodesSeg.setAtIndex(JAVA_LONG, i * 3L + 1, tris.get(i)[1]);
+                        elemNodesSeg.setAtIndex(JAVA_LONG, i * 3L + 2, tris.get(i)[2]);
+                    }
+
+                    Gmsh.gmshModelMeshAddElementsByType(surfaceTag, 2, elemTagsSeg, tris.size(), elemNodesSeg,
+                                                        tris.size() * 3L, ierr);
+                    surfaceTagMap.put(entry.getKey(), surfaceTag);
+                    surfaceTag++;
+                }
+
+                List<Integer> volumeTags = new ArrayList<>();
+                for (int layer = 0; layer < inputStls.size(); layer++) {
+                    List<Integer> layerSurfaces = new ArrayList<>();
+                    for (Map.Entry<Set<Integer>, Integer> entry : surfaceTagMap.entrySet()) {
+                        if (entry.getKey().contains(layer)) {
+                            layerSurfaces.add(entry.getValue());
+                        }
+                    }
+
+                    MemorySegment stags = arena.allocate(JAVA_INT, layerSurfaces.size());
+                    for (int i = 0; i < layerSurfaces.size(); i++) {
+                        stags.setAtIndex(JAVA_INT, i, layerSurfaces.get(i));
+                    }
+
+                    int loopTag = Gmsh.gmshModelGeoAddSurfaceLoop(stags, layerSurfaces.size(), -1, ierr);
+                    int volTag = Gmsh.gmshModelGeoAddVolume(arena.allocateFrom(JAVA_INT, loopTag), 1, -1, ierr);
+                    volumeTags.add(volTag);
+                }
+
+                Gmsh.gmshModelGeoSynchronize(ierr);
+
+                if (logger != null) logger.accept("Generated combined boundary model. Preparing 3D mesher...");
+
+                if (minMeshSize > 0)
+                    Gmsh.gmshOptionSetNumber(arena.allocateFrom("Mesh.MeshSizeMin"), minMeshSize, ierr);
+                if (maxMeshSize > 0)
+                    Gmsh.gmshOptionSetNumber(arena.allocateFrom("Mesh.MeshSizeMax"), maxMeshSize, ierr);
+                Gmsh.gmshOptionSetNumber(arena.allocateFrom("Mesh.Algorithm3D"), 1.0, ierr); // Delaunay 3D
+
+                Gmsh.gmshModelMeshGenerate(3, ierr);
+                if (ierr.get(JAVA_INT, 0) != 0) {
+                    throw new RuntimeException("mesh-error-with-error-code: " + ierr.get(JAVA_INT, 0));
+                }
+
+                Gmsh.gmshModelMeshOptimize(arena.allocateFrom("Netgen"), 0, 1, MemorySegment.NULL, 0, ierr);
+
+                Map<Integer, float[]> finalCoords = exportNodes(arena, ierr, logger);
+                Pair<int[][], int[]> finalElements = exportTetrahedronsMultiLayer(arena, ierr, volumeTags);
+
+                if (logger != null) logger.accept(
+                        String.format("Multi-layer mesh finished successfully! Nodes: %d, Elements: %d, Layers: %d\n",
+                                      finalCoords.size(), finalElements.getKey().length, volumeTags.size()));
+
+                return TetraModelApi.builder()
+                                    .coordinates(finalCoords)
+                                    .indices(finalElements.getKey())
+                                    .dimension(Dimension.THREE_D)
+                                    .elementLayers(finalElements.getValue())
+                                    .build();
+            } finally {
+                logPoller.interrupt();
+                try {
+                    logPoller.join(1000);
+                } catch (InterruptedException ignored) {
+                }
+                Gmsh.gmshLoggerStop(ierr);
+                Gmsh.gmshFinalize(ierr);
+            }
+        }
+    }
+
+    private static Pair<int[][], int[]> exportTetrahedronsMultiLayer(Arena arena, MemorySegment ierr,
+                                                                     List<Integer> volumeTags) {
+        List<int[]> allElements = new ArrayList<>();
+        List<Integer> allLayers = new ArrayList<>();
+
+        for (int layerIndex = 0; layerIndex < volumeTags.size(); layerIndex++) {
+            int volTag = volumeTags.get(layerIndex);
+
+            MemorySegment finalTypePtr = arena.allocate(ADDRESS);
+            MemorySegment finalType_n = arena.allocate(JAVA_LONG);
+            MemorySegment finalTagsPtr = arena.allocate(ADDRESS);
+            MemorySegment finalTags_n = arena.allocate(ADDRESS);
+            MemorySegment finalTags_nn = arena.allocate(JAVA_LONG);
+            MemorySegment finalNodeTagsPtr = arena.allocate(ADDRESS);
+            MemorySegment finalNodeTags_n = arena.allocate(ADDRESS);
+            MemorySegment finalNodeTags_nn = arena.allocate(JAVA_LONG);
+
+            Gmsh.gmshModelMeshGetElements(finalTypePtr, finalType_n, finalTagsPtr, finalTags_n, finalTags_nn,
+                                          finalNodeTagsPtr, finalNodeTags_n, finalNodeTags_nn, 3, volTag, ierr);
+
+            long finalTypes = finalType_n.get(JAVA_LONG, 0);
+            if (finalTypes == 0) {
+                continue;
+            }
+
+            MemorySegment elemTypesArray = finalTypePtr.get(ADDRESS, 0).reinterpret(finalTypes * 4);
+            MemorySegment elemTagsPtrArray = finalTagsPtr.get(ADDRESS, 0).reinterpret(finalTypes * 8);
+            MemorySegment elemTags_nArray = finalTags_n.get(ADDRESS, 0).reinterpret(finalTypes * 8);
+            MemorySegment nodeTagsPerElemPtrArray = finalNodeTagsPtr.get(ADDRESS, 0).reinterpret(finalTypes * 8);
+
+            for (long i = 0; i < finalTypes; i++) {
+                int eType = elemTypesArray.getAtIndex(JAVA_INT, i);
+                if (eType == 4) { // Tetrahedron
+                    int nElems = Math.toIntExact(elemTags_nArray.getAtIndex(JAVA_LONG, i));
+                    MemorySegment conns = nodeTagsPerElemPtrArray.getAtIndex(ADDRESS, i).reinterpret(nElems * 4L * 8);
+                    for (int j = 0; j < nElems; j++) {
+                        long n1 = conns.getAtIndex(JAVA_LONG, j * 4L);
+                        long n2 = conns.getAtIndex(JAVA_LONG, j * 4L + 1);
+                        long n3 = conns.getAtIndex(JAVA_LONG, j * 4L + 2);
+                        long n4 = conns.getAtIndex(JAVA_LONG, j * 4L + 3);
+                        allElements.add(new int[]{Math.toIntExact(n1), Math.toIntExact(n2), Math.toIntExact(
+                                n3), Math.toIntExact(n4)});
+                        allLayers.add(layerIndex);
+                    }
+                }
+            }
+
+            for (long i = 0; i < finalTypes; i++) {
+                Gmsh.gmshFree(elemTagsPtrArray.getAtIndex(ADDRESS, i));
+                Gmsh.gmshFree(nodeTagsPerElemPtrArray.getAtIndex(ADDRESS, i));
+            }
+            Gmsh.gmshFree(finalTypePtr.get(ADDRESS, 0));
+            Gmsh.gmshFree(finalTagsPtr.get(ADDRESS, 0));
+            Gmsh.gmshFree(finalTags_n.get(ADDRESS, 0));
+            Gmsh.gmshFree(finalNodeTagsPtr.get(ADDRESS, 0));
+            Gmsh.gmshFree(finalNodeTags_n.get(ADDRESS, 0));
+        }
+
+        int[][] elementsArray = allElements.toArray(new int[0][0]);
+        int[] layersArray = new int[allLayers.size()];
+        for (int i = 0; i < allLayers.size(); i++) {
+            layersArray[i] = allLayers.get(i);
+        }
+
+        return new Pair<>(elementsArray, layersArray);
     }
 }

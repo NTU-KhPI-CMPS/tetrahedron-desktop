@@ -13,6 +13,6 @@ import java.util.Map;
  */
 @Builder(toBuilder = true)
 public record TetraModelApi(Map<Integer, float[]> coordinates, int[][] indices, Dimension dimension, double minMeshSize,
-                            double maxMeshSize, int zeroCoordinateIndex) {
+                            double maxMeshSize, int zeroCoordinateIndex, int[] elementLayers) {
 
 }

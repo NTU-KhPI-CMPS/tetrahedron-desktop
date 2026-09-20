@@ -33,6 +33,13 @@ public class MeshViewModel {
     private final StringProperty stlFileName = new SimpleStringProperty();
 
     @Getter
+    @Setter
+    private boolean multiLayerMode = false;
+
+    @Getter
+    private final javafx.beans.property.DoubleProperty tolerance = new javafx.beans.property.SimpleDoubleProperty(1e-5);
+
+    @Getter
     private final StringProperty minMeshSize = new SimpleStringProperty("-");
     @Getter
     private final StringProperty maxMeshSize = new SimpleStringProperty("-");
@@ -54,9 +61,15 @@ public class MeshViewModel {
     @Getter
     private StringJoiner mesherLogs;
 
-    public void displayStlModel(String filePath) {
+    public void displayStlModel(String filePath) throws ModelValidationException {
         try {
-            TetraModelApi model = StlToTetraMesh.extractStlData(filePath, null);
+            boolean isStep = filePath.toLowerCase().endsWith(".step") || filePath.toLowerCase().endsWith(".stp");
+            TetraModelApi model;
+            if (isStep) {
+                model = StlToTetraMesh.extractMultiLayerStepData(filePath, null);
+            } else {
+                model = StlToTetraMesh.extractStlData(filePath, null);
+            }
             if (dimensionViewModel.is2D()) {
                 model = ModelDimensionUtils.addInfoAboutZeroCoordinateOrThrowException(model);
             }
@@ -69,7 +82,7 @@ public class MeshViewModel {
             maxMeshSize.set(String.format("%.5f", tetraModelApi.maxMeshSize()));
             modelController.initModelData(tetraModelApi);
         } catch (Throwable e) {
-            new ErrorDialog(new ModelValidationException("mesh-error", e.getMessage()));
+            throw new ModelValidationException("mesh-error", e.getMessage());
         }
     }
 
@@ -94,6 +107,10 @@ public class MeshViewModel {
             DataWriter.writeConstantsToFile(directory, tetraModelApi);
             DataWriter.writeCoordinatesToFile(directory, tetraModelApi, sortedNodeIndices);
             DataWriter.writeIndicesToFile(directory, tetraModelApi, indexToSortedIndex);
+
+            if (tetraModelApi.elementLayers() != null) {
+                DataWriter.writeElementLayersToFile(directory, tetraModelApi);
+            }
         } catch (IOException | RuntimeException e) {
             new ErrorDialog(new ModelValidationException("save-mesh-error", e.getMessage()));
         }
@@ -125,12 +142,23 @@ public class MeshViewModel {
             double processedMaxMesh = Double.parseDouble(maxMeshSize.getValue().replace(",", "."));
             double processedAngle = Double.parseDouble(angle.getValue().replace(",", "."));
 
-            if (dimensionViewModel.is2D()) {
-                tetraModelApi = StlToTetraMesh.generate2dMesh(stlFileName.get(), processedMinMesh, processedMaxMesh,
-                                                              processedAngle, this::appendLog);
+            String fileName = stlFileName.get();
+            boolean isStep = fileName != null
+                    && (fileName.toLowerCase().endsWith(".step")
+                    || fileName.toLowerCase().endsWith(".stp"));
+
+            if (isStep) {
+                tetraModelApi = StlToTetraMesh.generateStepMultiLayerMesh(List.of(fileName), processedMinMesh,
+                                                                          processedMaxMesh, processedAngle,
+                                                                          this::appendLog);
             } else {
-                tetraModelApi = StlToTetraMesh.generateMesh(stlFileName.get(), processedMinMesh, processedMaxMesh,
-                                                            processedAngle, this::appendLog);
+                if (dimensionViewModel.is2D()) {
+                    tetraModelApi = StlToTetraMesh.generate2dMesh(fileName, processedMinMesh, processedMaxMesh,
+                                                                  processedAngle, this::appendLog);
+                } else {
+                    tetraModelApi = StlToTetraMesh.generateMesh(fileName, processedMinMesh, processedMaxMesh,
+                                                                processedAngle, this::appendLog);
+                }
             }
 
             Platform.runLater(() -> {

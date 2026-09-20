@@ -75,7 +75,12 @@ public class MeshFilesPickerDialog {
             return;
         }
 
-        meshViewModel.displayStlModel(stlController.getFile().getAbsolutePath());
+        try {
+            meshViewModel.displayStlModel(stlController.getFile().getAbsolutePath());
+        } catch (ModelValidationException e) {
+            new ErrorDialog(e);
+            return;
+        }
 
         if (dialog != null) {
             dialog.close();

@@ -6,7 +6,9 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import org.cmps.tetrahedron.controller.LocalizationController;
 import org.cmps.tetrahedron.enums.MeshStatus;
+import org.cmps.tetrahedron.exception.ModelValidationException;
 import org.cmps.tetrahedron.utils.NativesExtractor;
+import org.cmps.tetrahedron.view.common.ErrorDialog;
 import org.cmps.tetrahedron.viewmodel.MeshViewModel;
 
 import java.nio.file.Path;
@@ -47,7 +49,11 @@ public class MeshPage {
     }
 
     private void initModelIfInDebug() {
-        meshViewModel.displayStlModel("models/model-2d.stl");
+        try {
+            meshViewModel.displayStlModel("models/model-2d.stl");
+        } catch (ModelValidationException e) {
+            new ErrorDialog(e);
+        }
     }
 
     @FXML

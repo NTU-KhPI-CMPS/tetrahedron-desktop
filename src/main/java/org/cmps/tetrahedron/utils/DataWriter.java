@@ -15,6 +15,7 @@ public class DataWriter {
     private static final String CONSTANTS_FILE = "0_constants.txt";
     private static final String COORDINATES_FILE = "1_coordinates_matrix.txt";
     private static final String INDICES_FILE = "2_indices_matrix.txt";
+    private static final String LAYER_IDS_FILE = "3_layer_ids.txt";
 
     public static void writeConstantsToFile(File directory, TetraModelApi tetraModelApi) throws IOException {
         File file = FileUtils.createFile(directory, CONSTANTS_FILE);
@@ -68,6 +69,20 @@ public class DataWriter {
                     writer.write(String.format("%7d ", coordIndexToSortedIndex.get(element[3])));
                 }
 
+                writer.newLine();
+            }
+        }
+    }
+
+    public static void writeElementLayersToFile(File directory, TetraModelApi tetraModelApi) throws IOException {
+        if (tetraModelApi.elementLayers() == null) {
+            return;
+        }
+        File file = FileUtils.createFile(directory, LAYER_IDS_FILE);
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            int[] layers = tetraModelApi.elementLayers();
+            for (int i = 0; i < layers.length; i++) {
+                writer.write(String.format("%7d %7d", i + 1, layers[i]));
                 writer.newLine();
             }
         }
