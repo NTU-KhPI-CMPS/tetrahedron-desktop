@@ -19,10 +19,10 @@ jar cf Tetrahedron.app/Contents/app/Tetrahedron.jar -C Tetrahedron.app/Contents/
 rm -r Tetrahedron.app/Contents/app/Tetrahedron
 
 find Tetrahedron.app -type f -exec sh -c '
-  if file "$0" | grep -q "Mach-O"; then
-    codesign -s "$CERT_NAME" --options runtime --timestamp --force "$0"
+  if file "$1" | grep -q "Mach-O"; then
+    codesign -s "$2" --options runtime --timestamp --force "$1"
   fi
-' {} \;
+' _ {} "$CERT_NAME" \;
 codesign -s "$CERT_NAME" --entitlements ../tools/Tetrahedron.entitlements --options runtime --timestamp --force \
    Tetrahedron.app
 
