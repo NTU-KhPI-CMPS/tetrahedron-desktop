@@ -22,5 +22,5 @@ public class Stress {
     @Builder.Default
     private float minStress = Float.MAX_VALUE;
     @Builder.Default
-    private float maxStress = Float.MIN_VALUE;
+    private float maxStress = -Float.MAX_VALUE;
 }

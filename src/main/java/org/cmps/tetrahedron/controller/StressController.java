@@ -43,7 +43,7 @@ public class StressController {
         }
 
         stress.setMinStress(Float.MAX_VALUE);
-        stress.setMaxStress(Float.MIN_VALUE);
+        stress.setMaxStress(-Float.MAX_VALUE);
 
         List<Float> stressToDisplay = new ArrayList<>();
 
@@ -53,7 +53,8 @@ public class StressController {
 
             if (stressValue < stress.getMinStress()) {
                 stress.setMinStress(stressValue);
-            } else if (stressValue > stress.getMaxStress()) {
+            }
+            if (stressValue > stress.getMaxStress()) {
                 stress.setMaxStress(stressValue);
             }
 
@@ -66,6 +67,9 @@ public class StressController {
         ModelController.getInstance().setValuesToDisplay(stressToDisplay);
     }
 
+    /**
+     * @param stressValues stress components in the order: σx, τxy, τzx, σy, τyz, σz
+     */
     private float calculateStress(float[] stressValues, StressDisplayOption option) {
         return switch (option) {
             case MISES -> misesStress(stressValues[0], stressValues[1], stressValues[2],
