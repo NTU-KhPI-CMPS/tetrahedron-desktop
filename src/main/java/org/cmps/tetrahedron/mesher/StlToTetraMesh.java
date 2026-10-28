@@ -970,8 +970,13 @@ public class StlToTetraMesh {
                     MemorySegment outDimTagsMap_n = arena.allocate(ADDRESS);
                     MemorySegment outDimTagsMap_nn = arena.allocate(JAVA_LONG);
 
-                    Gmsh.gmshModelOccFragment(objectDimTags, numVols, toolDimTags, 0, outDimTagsPtr, outDimTags_n,
-                                              outDimTagsMapPtr, outDimTagsMap_n, outDimTagsMap_nn, -1, 1, 1, ierr);
+                    // The C API takes the number of ints in the flat (dim, tag) array, not the number of pairs.
+                    Gmsh.gmshModelOccFragment(objectDimTags, numVols * 2, toolDimTags, 0, outDimTagsPtr,
+                                              outDimTags_n, outDimTagsMapPtr, outDimTagsMap_n, outDimTagsMap_nn, -1,
+                                              1, 1, ierr);
+                    if (ierr.get(JAVA_INT, 0) != 0) {
+                        throw new RuntimeException("fragment-error-with-error-code: " + ierr.get(JAVA_INT, 0));
+                    }
 
                     Gmsh.gmshModelOccSynchronize(ierr);
                 } else {
