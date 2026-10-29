@@ -81,7 +81,7 @@ public class DataWriter {
         File file = FileUtils.createFile(directory, LAYER_IDS_FILE);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             int[] layers = tetraModelApi.elementLayers();
-            for (int i = 0; i < layers.length; i++) {
+            for (int i = 1; i <= layers.length; i++) {
                 writer.write(String.format("%7d %7d", i + 1, layers[i]));
                 writer.newLine();
             }
