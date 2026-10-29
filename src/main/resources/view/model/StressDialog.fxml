@@ -18,7 +18,7 @@
                 <Label text="%stress-label" styleClass="dialog-title"/>
             </HBox>
 
-            <fx:include fx:id="elementGrid" source="./../common/Switch.fxml"/>
+            <fx:include fx:id="elementGrid" source="/view/common/Switch.fxml"/>
 
             <HBox spacing="10" styleClass="label-input-container">
                 <VBox alignment="CENTER_LEFT">
