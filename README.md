@@ -1,6 +1,6 @@
 # Tetrahedron (desktop)
 
-[![User guide](https://img.shields.io/badge/User%20guide-read-blue?logo=readthedocs&logoColor=white)](https://github.com/NTU-KhPI-CMPS/tetrahedron-desktop/blob/develop/Tetrahedron%20User%20Guide.pdf)
+[![User guide](https://img.shields.io/badge/User%20guide-read-blue?logo=readthedocs&logoColor=white)](https://github.com/NTU-KhPI-CMPS/tetrahedron-desktop/blob/develop/doc/Tetrahedron%20User%20Guide.pdf)
 [![Latest release](https://img.shields.io/github/v/release/NTU-KhPI-CMPS/tetrahedron-desktop?logo=github&label=Latest%20release)](https://github.com/NTU-KhPI-CMPS/tetrahedron-desktop/releases/latest)
 
 The English version and developer instructions are below.
