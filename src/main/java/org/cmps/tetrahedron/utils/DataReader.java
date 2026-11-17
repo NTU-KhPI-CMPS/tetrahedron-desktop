@@ -42,7 +42,9 @@ public class DataReader {
         Locale.setDefault(US);
 
         int i = 1, index, startIndex;
-        Map<Integer, float[]> stressOneElement = new HashMap<>();
+        // Sorted by element index: values are later displayed in iteration order, element by element.
+        // HashMap does not keep that order for indices >= 65536.
+        Map<Integer, float[]> stressOneElement = new TreeMap<>();
 
         try (Scanner fid = new Scanner(stressData)) {
             while (fid.hasNextLine()) {

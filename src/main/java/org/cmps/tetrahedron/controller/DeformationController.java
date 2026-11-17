@@ -55,11 +55,11 @@ public class DeformationController {
         deformationComponents = components;
         currentScale = scale;
 
-        int i = 0;
         Map<Integer, float[]> modelVertices = new HashMap<>();
         for (Integer idx : originalVertices.keySet()) {
             float[] orig = originalVertices.get(idx);
-            float[] def = lastAppliedDeformations.get(i++);
+            // deformations are stored by node index (see readDeformations), not in map iteration order
+            float[] def = lastAppliedDeformations.get(idx - 1);
             float[] current = new float[] {orig[0], orig[1], orig[2]};
             modelVertices.put(idx, current);
 
