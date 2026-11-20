@@ -15,7 +15,7 @@
       stylesheets="@/style/navbar.css"
       styleClass="navbar">
 
-    <VBox alignment="CENTER" onMouseClicked="#openHomePage">
+    <VBox id="logo" alignment="CENTER" onMouseClicked="#openHomePage">
         <ImageView fx:id="logoImage">
             <Image url="@/logo.png"/>
         </ImageView>

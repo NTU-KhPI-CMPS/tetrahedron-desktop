@@ -4,8 +4,11 @@ import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Tooltip;
+import org.cmps.tetrahedron.controller.LocalizationController;
 import org.cmps.tetrahedron.controller.MouseController;
 import org.cmps.tetrahedron.enums.VerticeMoveMode;
+import org.cmps.tetrahedron.model.ModelViewSettings;
 import org.cmps.tetrahedron.view.model.ColorPickerDialog;
 
 public class BaseLeftTolBar {
@@ -20,6 +23,34 @@ public class BaseLeftTolBar {
     private Button leftRight;
     @FXML
     public Button colorPicker;
+
+    @FXML
+    public Button publicationMode;
+
+    @FXML
+    public void initialize() {
+        String tooltip = LocalizationController.getInstance()
+                .getString(LocalizationController.RIGHT_TOOLBAR_BUNDLE, "publication-mode");
+        publicationMode.setTooltip(new Tooltip(tooltip));
+        // toggle button: don't take focus on click, otherwise ":focused" style keeps it highlighted when mode is off
+        publicationMode.setFocusTraversable(false);
+        updatePublicationModeStyle();
+    }
+
+    @FXML
+    public void clickOnPublicationMode() {
+        ModelViewSettings settings = ModelViewSettings.getInstance();
+        settings.setPublicationMode(!settings.isPublicationMode());
+        updatePublicationModeStyle();
+    }
+
+    private void updatePublicationModeStyle() {
+        if (ModelViewSettings.getInstance().isPublicationMode()) {
+            focus(publicationMode);
+        } else {
+            unFocus(publicationMode);
+        }
+    }
 
     @FXML
     public void clickOnCursor() {
@@ -54,7 +85,7 @@ public class BaseLeftTolBar {
         ColorPickerDialog.showColorPicker(bounds.getMinX(), bounds.getMinY());
     }
 
-    private void focus(Button button) {
+    protected void focus(Button button) {
         if (!button.getStyleClass().contains("button-selected")) {
             button.getStyleClass().add("button-selected");
         }
@@ -69,7 +100,7 @@ public class BaseLeftTolBar {
         }
     }
 
-    private void unFocus(Button button) {
+    protected void unFocus(Button button) {
         button.getStyleClass().remove("button-selected");
         Node graphic = button.getGraphic();
         if (graphic == null) {

@@ -15,7 +15,6 @@ public class LeftTolBar extends BaseLeftTolBar {
 
     @FXML
     public Button legendSettings;
-
     @FXML
     public void clickOnLegendSettings() {
         Bounds bounds = colorPicker.localToScreen(colorPicker.getBoundsInParent());

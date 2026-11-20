@@ -8,7 +8,7 @@
            stylesheets="@/style/mesh.css">
     <ModelView/>
     <VBox>
-        <fx:include source="/view/common/Navbar.fxml"/>
+        <fx:include fx:id="navbar" source="/view/common/Navbar.fxml"/>
         <Region VBox.vgrow="ALWAYS"/>
         <HBox styleClass="tool-bar-block">
             <VBox>

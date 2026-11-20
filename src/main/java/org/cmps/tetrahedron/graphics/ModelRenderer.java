@@ -75,7 +75,9 @@ public class ModelRenderer {
     }
 
     public void paintGL() {
-        float[] backgroundColor = ColorSettings.getInstance().getBackgroundColor();
+        float[] backgroundColor = ModelViewSettings.getInstance().isPublicationMode()
+                ? ModelViewSettings.PUBLICATION_BACKGROUND_COLOR
+                : ColorSettings.getInstance().getBackgroundColor();
         glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

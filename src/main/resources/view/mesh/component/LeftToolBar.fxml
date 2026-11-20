@@ -32,4 +32,10 @@
             <fx:include source="/icon/ColorPicker.fxml"/>
         </graphic>
     </Button>
+
+    <Button styleClass="button" fx:id="publicationMode" onMouseClicked="#clickOnPublicationMode">
+        <graphic>
+            <fx:include source="/icon/Camera.fxml"/>
+        </graphic>
+    </Button>
 </VBox>

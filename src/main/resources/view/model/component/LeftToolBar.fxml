@@ -40,6 +40,12 @@
         </graphic>
     </Button>
 
+    <Button styleClass="button" fx:id="publicationMode" onMouseClicked="#clickOnPublicationMode">
+        <graphic>
+            <fx:include source="/icon/Camera.fxml"/>
+        </graphic>
+    </Button>
+
     <Button styleClass="button" fx:id="deleteModel" onMouseClicked="#clickOnDelete">
         <graphic>
             <fx:include source="/icon/Delete.fxml"/>
