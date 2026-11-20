@@ -25,6 +25,7 @@ public class LeftTolBar extends BaseLeftTolBar {
         setTooltip(legendSettings, "legend-settings");
         setTooltip(deleteModel, "delete-model");
         legendSettings.setFocusTraversable(false);
+        deleteModel.setFocusTraversable(false);
     }
 
     @FXML
