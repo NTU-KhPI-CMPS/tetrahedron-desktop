@@ -171,8 +171,14 @@ public class ModelRenderer {
             maxZ = Math.max(maxZ, -v.z);
         }
 
-        float margin = 0.000001f;
-        return new Vector2f(Math.max(margin, minZ - margin), maxZ + margin);
+        // The margin must scale with the model: faces lying exactly on the bounding box
+        // (e.g. flat end caps) get partially clipped by float rounding otherwise.
+        float depthRange = Math.max(maxZ - minZ, 1e-6f);
+        float margin = depthRange * 0.05f;
+        float far = maxZ + margin;
+        // Keep near away from zero to preserve depth-buffer precision when zoomed in close.
+        float near = Math.max(minZ - margin, far * 0.001f);
+        return new Vector2f(near, far);
     }
 
     private void renderModel() {
