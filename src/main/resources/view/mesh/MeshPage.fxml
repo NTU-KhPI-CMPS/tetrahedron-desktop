@@ -9,17 +9,16 @@
     <ModelView/>
     <VBox>
         <fx:include fx:id="navbar" source="/view/common/Navbar.fxml"/>
-        <Region VBox.vgrow="ALWAYS"/>
-        <HBox styleClass="tool-bar-block">
-            <VBox>
-                <Region VBox.vgrow="ALWAYS"/>
+        <!-- Takes all the height between navbar and info panel: left toolbar uses it to decide if it fits -->
+        <HBox styleClass="tool-bar-block" VBox.vgrow="ALWAYS" minHeight="0">
+            <VBox alignment="CENTER_LEFT">
                 <fx:include source="/view/mesh/component/LeftToolBar.fxml"/>
-                <Region VBox.vgrow="ALWAYS"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
-            <fx:include source="/view/mesh/component/RightToolbar.fxml" resources="i18n/mesh-right-toolbar"/>
+            <VBox alignment="CENTER_RIGHT">
+                <fx:include source="/view/mesh/component/RightToolbar.fxml" resources="i18n/mesh-right-toolbar"/>
+            </VBox>
         </HBox>
-        <Region VBox.vgrow="ALWAYS"/>
         <HBox styleClass="info-panel">
             <Region HBox.hgrow="ALWAYS"/>
             <HBox fx:id="progressContainer" styleClass="progress-container" spacing="10" visible="false" onMouseClicked="#onProgressClicked">

@@ -29,33 +29,43 @@
 
     <Region styleClass="toolbar-separator"/>
 
-    <Button styleClass="button" fx:id="viewFront" focusTraversable="false" onMouseClicked="#clickOnViewFront">
-        <graphic>
-            <fx:include source="/icon/ViewFront.fxml"/>
-        </graphic>
-    </Button>
+    <!-- Shown when the toolbar fits the window, otherwise replaced by the views menu button -->
+    <VBox fx:id="viewButtons" styleClass="view-buttons">
+        <Button styleClass="button" fx:id="viewFront" focusTraversable="false" onMouseClicked="#clickOnViewFront">
+            <graphic>
+                <fx:include source="/icon/ViewFront.fxml"/>
+            </graphic>
+        </Button>
 
-    <Button styleClass="button" fx:id="viewTop" focusTraversable="false" onMouseClicked="#clickOnViewTop">
-        <graphic>
-            <fx:include source="/icon/ViewTop.fxml"/>
-        </graphic>
-    </Button>
+        <Button styleClass="button" fx:id="viewTop" focusTraversable="false" onMouseClicked="#clickOnViewTop">
+            <graphic>
+                <fx:include source="/icon/ViewTop.fxml"/>
+            </graphic>
+        </Button>
 
-    <Button styleClass="button" fx:id="viewRight" focusTraversable="false" onMouseClicked="#clickOnViewRight">
-        <graphic>
-            <fx:include source="/icon/ViewRight.fxml"/>
-        </graphic>
-    </Button>
+        <Button styleClass="button" fx:id="viewRight" focusTraversable="false" onMouseClicked="#clickOnViewRight">
+            <graphic>
+                <fx:include source="/icon/ViewRight.fxml"/>
+            </graphic>
+        </Button>
 
-    <Button styleClass="button" fx:id="viewLeft" focusTraversable="false" onMouseClicked="#clickOnViewLeft">
-        <graphic>
-            <fx:include source="/icon/ViewLeft.fxml"/>
-        </graphic>
-    </Button>
+        <Button styleClass="button" fx:id="viewLeft" focusTraversable="false" onMouseClicked="#clickOnViewLeft">
+            <graphic>
+                <fx:include source="/icon/ViewLeft.fxml"/>
+            </graphic>
+        </Button>
 
-    <Button styleClass="button" fx:id="viewIsometric" focusTraversable="false" onMouseClicked="#clickOnViewIsometric">
+        <Button styleClass="button" fx:id="viewIsometric" focusTraversable="false" onMouseClicked="#clickOnViewIsometric">
+            <graphic>
+                <fx:include source="/icon/ViewIsometric.fxml"/>
+            </graphic>
+        </Button>
+    </VBox>
+
+    <Button styleClass="button" fx:id="viewsMenu" focusTraversable="false" visible="false" managed="false"
+            onMouseClicked="#clickOnViewsMenu">
         <graphic>
-            <fx:include source="/icon/ViewIsometric.fxml"/>
+            <fx:include source="/icon/Views.fxml"/>
         </graphic>
     </Button>
 

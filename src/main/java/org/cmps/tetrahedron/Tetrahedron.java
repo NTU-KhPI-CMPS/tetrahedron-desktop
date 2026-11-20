@@ -1,8 +1,10 @@
 package org.cmps.tetrahedron;
 
 import javafx.application.Application;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import lombok.Getter;
 import org.cmps.tetrahedron.router.Router;
@@ -37,8 +39,11 @@ public class Tetrahedron extends Application {
         ImageView logo = ResourceReader.imageReader("/logo.png");
         primaryStage.getIcons().add(logo.getImage());
 
-        primaryStage.setMinHeight(MIN_HEIGHT);
-        primaryStage.setMinWidth(MIN_WIDTH);
+        // Small screens (or macOS "larger text" display scaling) can be smaller than the minimal size,
+        // then the window would go beyond the screen.
+        Rectangle2D screen = Screen.getPrimary().getVisualBounds();
+        primaryStage.setMinHeight(Math.min(MIN_HEIGHT, screen.getHeight()));
+        primaryStage.setMinWidth(Math.min(MIN_WIDTH, screen.getWidth()));
         primaryStage.setMaximized(true);
 
         primaryStage.show();

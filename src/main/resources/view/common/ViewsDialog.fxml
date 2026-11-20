@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<DialogPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:id="root"
+            stylesheets="@/style/views-dialog.css"
+            fx:controller="org.cmps.tetrahedron.view.common.ViewsDialog">
+    <content>
+        <VBox spacing="4">
+            <Label styleClass="main-label" text="%views"/>
+
+            <Button styleClass="view-option" text="%view-front" focusTraversable="false" onMouseClicked="#clickOnFront">
+                <graphic>
+                    <fx:include source="/icon/ViewFront.fxml"/>
+                </graphic>
+            </Button>
+
+            <Button styleClass="view-option" text="%view-top" focusTraversable="false" onMouseClicked="#clickOnTop">
+                <graphic>
+                    <fx:include source="/icon/ViewTop.fxml"/>
+                </graphic>
+            </Button>
+
+            <Button styleClass="view-option" text="%view-right" focusTraversable="false" onMouseClicked="#clickOnRight">
+                <graphic>
+                    <fx:include source="/icon/ViewRight.fxml"/>
+                </graphic>
+            </Button>
+
+            <Button styleClass="view-option" text="%view-left" focusTraversable="false" onMouseClicked="#clickOnLeft">
+                <graphic>
+                    <fx:include source="/icon/ViewLeft.fxml"/>
+                </graphic>
+            </Button>
+
+            <Button styleClass="view-option" text="%view-isometric" focusTraversable="false" onMouseClicked="#clickOnIsometric">
+                <graphic>
+                    <fx:include source="/icon/ViewIsometric.fxml"/>
+                </graphic>
+            </Button>
+        </VBox>
+    </content>
+</DialogPane>

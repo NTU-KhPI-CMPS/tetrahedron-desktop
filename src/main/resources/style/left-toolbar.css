@@ -80,3 +80,8 @@
     -fx-max-width: 26px;
     -fx-background-color: #B4C0CC;
 }
+
+.view-buttons {
+    -fx-spacing: 10px;
+    -fx-alignment: center;
+}

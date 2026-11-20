@@ -5,8 +5,11 @@ import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 
 import org.cmps.tetrahedron.controller.LocalizationController;
 import org.cmps.tetrahedron.controller.MouseController;
@@ -17,6 +20,11 @@ import org.cmps.tetrahedron.view.model.ColorPickerDialog;
 
 public class BaseLeftTolBar {
 
+    /**
+     * Buttons grow from 26px to 40px on hover, keep space for it so the toolbar doesn't overflow.
+     */
+    private static final double HOVER_RESERVE = 14;
+
     private final MouseController mouseController = MouseController.getInstance();
 
     @FXML
@@ -25,6 +33,10 @@ public class BaseLeftTolBar {
     private Button topBottom;
     @FXML
     private Button leftRight;
+    @FXML
+    private VBox viewButtons;
+    @FXML
+    private Button viewsMenu;
     @FXML
     private Button viewFront;
     @FXML
@@ -53,11 +65,57 @@ public class BaseLeftTolBar {
         setTooltip(viewRight, "view-right");
         setTooltip(viewLeft, "view-left");
         setTooltip(viewIsometric, "view-isometric");
+        setTooltip(viewsMenu, "views");
+
+        collapseViewButtonsWhenNotFit((VBox) viewButtons.getParent());
 
         // toggle button: don't take focus on click, otherwise ":focused" style keeps it highlighted when mode is off
         publicationMode.setFocusTraversable(false);
         colorPicker.setFocusTraversable(false);
         updatePublicationModeStyle();
+    }
+
+    /**
+     * Replaces view buttons with a single views menu button when the toolbar doesn't fit the height of its container.
+     * <p>
+     * The container is expected to give the toolbar all the vertical space it can use (its height must not depend
+     * on the toolbar). It is checked only when the container is resized, so hovering buttons never switches modes.
+     */
+    private void collapseViewButtonsWhenNotFit(VBox toolbar) {
+        // don't force the container to grow, its height should show how much space there is
+        toolbar.setMinHeight(0);
+
+        ChangeListener<Number> onContainerResize = (obs, oldHeight, newHeight) -> updateViewButtonsCollapsed(toolbar);
+        toolbar.parentProperty().addListener((obs, oldParent, newParent) -> {
+            if (oldParent instanceof Region oldContainer) {
+                oldContainer.heightProperty().removeListener(onContainerResize);
+            }
+            if (newParent instanceof Region newContainer) {
+                newContainer.heightProperty().addListener(onContainerResize);
+            }
+        });
+        if (toolbar.getParent() instanceof Region container) {
+            container.heightProperty().addListener(onContainerResize);
+        }
+    }
+
+    private void updateViewButtonsCollapsed(VBox toolbar) {
+        Parent parent = toolbar.getParent();
+        if (!(parent instanceof Region container) || container.getHeight() <= 0) {
+            return;
+        }
+        double availableHeight = container.getHeight() - container.snappedTopInset() - container.snappedBottomInset();
+
+        double expandedHeight = toolbar.prefHeight(-1);
+        if (viewsMenu.isManaged()) {
+            expandedHeight += viewButtons.prefHeight(-1) - viewsMenu.prefHeight(-1);
+        }
+
+        boolean collapsed = availableHeight < expandedHeight + HOVER_RESERVE;
+        viewButtons.setVisible(!collapsed);
+        viewButtons.setManaged(!collapsed);
+        viewsMenu.setVisible(collapsed);
+        viewsMenu.setManaged(collapsed);
     }
 
     /**
@@ -146,6 +204,13 @@ public class BaseLeftTolBar {
     @FXML
     public void clickOnViewIsometric() {
         mouseController.setView(ViewPreset.ISOMETRIC);
+    }
+
+    @FXML
+    public void clickOnViewsMenu() {
+        Bounds bounds = viewsMenu.localToScreen(viewsMenu.getBoundsInLocal());
+        ViewsDialog.showDialog(bounds.getMinX(), bounds.getMaxY());
+        highlightWhileOpen(viewsMenu);
     }
 
     @FXML

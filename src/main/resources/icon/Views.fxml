@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.shape.SVGPath?>
+<!-- Cube with a chevron: opens the list of views -->
+<SVGPath content="M8 1L15 5M15 5V13M15 13L8 17M8 17L1 13M1 13V5M1 5L8 1
+                      M1 5L8 9M8 9L15 5M8 9V17"
+         fill="transparent"
+         strokeWidth="1.2"
+         strokeLineCap="ROUND"
+         strokeLineJoin="ROUND"
+         styleClass="button"/>

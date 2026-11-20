@@ -1,0 +1,54 @@
+.dialog-pane {
+    -fx-background-color: TRANSPARENT;
+    -fx-padding: 10px 10px;
+}
+
+.content {
+    -fx-background-color: #e7edf2;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.3, 0, 3);
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-padding: 16px 12px;
+    -fx-font-family: "Geologica Roman";
+}
+
+.main-label {
+    -fx-font-family: "Geologica Roman Medium";
+    -fx-font-size: 13px;
+    -fx-text-fill: #0e0e0e;
+    -fx-padding: 0 8px 6px 8px;
+}
+
+.view-option {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8px;
+    -fx-padding: 6px 12px 6px 8px;
+    -fx-graphic-text-gap: 12px;
+    -fx-font-size: 13px;
+    -fx-text-fill: #0e0e0e;
+    -fx-alignment: CENTER_LEFT;
+    -fx-max-width: Infinity;
+    -fx-cursor: hand;
+}
+
+.view-option:hover {
+    -fx-background-color: #1E0094;
+    -fx-text-fill: #FAFCFE;
+}
+
+/* icons (the graphic is a direct child of the button) */
+.view-option > .button {
+    -fx-stroke: #0E0E0E;
+}
+
+.view-option:hover > .button {
+    -fx-stroke: #FAFCFE;
+}
+
+.view-option > .view-icon {
+    -fx-fill: rgba(14, 14, 14, 0.35);
+}
+
+.view-option:hover > .view-icon {
+    -fx-fill: rgba(250, 252, 254, 0.55);
+}
