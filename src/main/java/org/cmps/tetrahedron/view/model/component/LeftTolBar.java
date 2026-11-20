@@ -30,8 +30,8 @@ public class LeftTolBar extends BaseLeftTolBar {
 
     @FXML
     public void clickOnLegendSettings() {
-        Bounds bounds = colorPicker.localToScreen(colorPicker.getBoundsInParent());
-        LegendDialog.showDialog(bounds.getMinX(), bounds.getMinY());
+        Bounds bounds = legendSettings.localToScreen(legendSettings.getBoundsInLocal());
+        LegendDialog.showDialog(bounds.getMinX(), bounds.getMaxY());
         highlightWhileOpen(legendSettings);
     }
 

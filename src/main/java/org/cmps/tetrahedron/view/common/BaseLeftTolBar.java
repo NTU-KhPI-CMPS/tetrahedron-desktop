@@ -215,8 +215,8 @@ public class BaseLeftTolBar {
 
     @FXML
     public void clickOnColorPicker() {
-        Bounds bounds = colorPicker.localToScreen(colorPicker.getBoundsInParent());
-        ColorPickerDialog.showColorPicker(bounds.getMinX(), bounds.getMinY());
+        Bounds bounds = colorPicker.localToScreen(colorPicker.getBoundsInLocal());
+        ColorPickerDialog.showColorPicker(bounds.getMinX(), bounds.getMaxY());
         highlightWhileOpen(colorPicker);
     }
 
