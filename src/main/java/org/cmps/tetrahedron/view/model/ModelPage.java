@@ -53,7 +53,7 @@ public class ModelPage extends StackPane {
         VBox.setVgrow(mainBlock, Priority.ALWAYS);
 
         InfoPanel infoPanel = InfoPanel.getInstance();
-        infoPanel.setPadding(new Insets(0, 0, 30, 0));
+        infoPanel.setPadding(new Insets(0, 0, 54, 0));
         // hide "Selected node" info and logo on screenshots for articles
         BooleanBinding notPublicationMode = ModelViewSettings.getInstance().getPublicationMode().not();
         infoPanel.visibleProperty().bind(notPublicationMode);
