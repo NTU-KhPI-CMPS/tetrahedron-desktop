@@ -1,10 +1,13 @@
 package org.cmps.tetrahedron.view.common;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;
+
 import org.cmps.tetrahedron.controller.LocalizationController;
 import org.cmps.tetrahedron.controller.MouseController;
 import org.cmps.tetrahedron.enums.VerticeMoveMode;
@@ -37,7 +40,24 @@ public class BaseLeftTolBar {
 
         // toggle button: don't take focus on click, otherwise ":focused" style keeps it highlighted when mode is off
         publicationMode.setFocusTraversable(false);
+        colorPicker.setFocusTraversable(false);
         updatePublicationModeStyle();
+    }
+
+    /**
+     * Keeps a menu button selected only while its dialog is open (main window gets focus back when dialog closes).
+     */
+    protected void highlightWhileOpen(Button button) {
+        focus(button);
+        button.getScene().getWindow().focusedProperty().addListener(new ChangeListener<>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean wasFocused, Boolean isFocused) {
+                if (isFocused) {
+                    unFocus(button);
+                    observable.removeListener(this);
+                }
+            }
+        });
     }
 
     protected void setTooltip(Button button, String key) {
@@ -91,6 +111,7 @@ public class BaseLeftTolBar {
     public void clickOnColorPicker() {
         Bounds bounds = colorPicker.localToScreen(colorPicker.getBoundsInParent());
         ColorPickerDialog.showColorPicker(bounds.getMinX(), bounds.getMinY());
+        highlightWhileOpen(colorPicker);
     }
 
     protected void focus(Button button) {

@@ -24,12 +24,14 @@ public class LeftTolBar extends BaseLeftTolBar {
         super.initialize();
         setTooltip(legendSettings, "legend-settings");
         setTooltip(deleteModel, "delete-model");
+        legendSettings.setFocusTraversable(false);
     }
 
     @FXML
     public void clickOnLegendSettings() {
         Bounds bounds = colorPicker.localToScreen(colorPicker.getBoundsInParent());
         LegendDialog.showDialog(bounds.getMinX(), bounds.getMinY());
+        highlightWhileOpen(legendSettings);
     }
 
     @FXML
