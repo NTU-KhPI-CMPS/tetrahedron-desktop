@@ -66,6 +66,10 @@ public class ModelController {
         modelReady = true;
     }
 
+    public boolean hasModel() {
+        return !model.getFaces().isEmpty();
+    }
+
     public List<float[][]> getFaces() {
         return model.getFaces();
     }

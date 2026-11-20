@@ -68,7 +68,8 @@ public class ModelPage extends StackPane {
 
         if (Objects.equals(System.getProperty("debug"), "true")) {
             initModelIfInDebug();
-        } else {
+        } else if (!ModelController.getInstance().hasModel()) {
+            // page is also rebuilt on language change; don't ask for files again when a model is already shown
             Platform.runLater(ModelFilesPickerDialog::openDialogWindow);
         }
     }
