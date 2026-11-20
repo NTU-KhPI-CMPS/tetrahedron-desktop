@@ -29,12 +29,20 @@ public class BaseLeftTolBar {
 
     @FXML
     public void initialize() {
-        String tooltip = LocalizationController.getInstance()
-                .getString(LocalizationController.RIGHT_TOOLBAR_BUNDLE, "publication-mode");
-        publicationMode.setTooltip(new Tooltip(tooltip));
+        setTooltip(cursor, "rotate-free");
+        setTooltip(topBottom, "rotate-up-down");
+        setTooltip(leftRight, "rotate-left-right");
+        setTooltip(colorPicker, "colors");
+        setTooltip(publicationMode, "publication-mode");
+
         // toggle button: don't take focus on click, otherwise ":focused" style keeps it highlighted when mode is off
         publicationMode.setFocusTraversable(false);
         updatePublicationModeStyle();
+    }
+
+    protected void setTooltip(Button button, String key) {
+        String text = LocalizationController.getInstance().getString(LocalizationController.LEFT_TOOLBAR_BUNDLE, key);
+        button.setTooltip(new Tooltip(text));
     }
 
     @FXML

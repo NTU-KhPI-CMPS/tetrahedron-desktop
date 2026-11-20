@@ -16,6 +16,17 @@ public class LeftTolBar extends BaseLeftTolBar {
     @FXML
     public Button legendSettings;
     @FXML
+    public Button deleteModel;
+
+    @Override
+    @FXML
+    public void initialize() {
+        super.initialize();
+        setTooltip(legendSettings, "legend-settings");
+        setTooltip(deleteModel, "delete-model");
+    }
+
+    @FXML
     public void clickOnLegendSettings() {
         Bounds bounds = colorPicker.localToScreen(colorPicker.getBoundsInParent());
         LegendDialog.showDialog(bounds.getMinX(), bounds.getMinY());

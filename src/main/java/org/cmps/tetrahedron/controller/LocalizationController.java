@@ -18,6 +18,7 @@ public class LocalizationController {
     private final Map<String, ResourceBundle> bundles = new HashMap<>();
 
     public static final String RIGHT_TOOLBAR_BUNDLE = "i18n.right-toolbar";
+    public static final String LEFT_TOOLBAR_BUNDLE = "i18n.left-toolbar";
     public static final String INDEX_FILE_SELECTOR_BUNDLE = "i18n.index-file-selector";
     public static final String NODE_FILE_SELECTOR_BUNDLE = "i18n.node-file-selector";
     public static final String ERROR_DIALOG_BUNDLE = "i18n.error-dialog";
@@ -40,7 +41,7 @@ public class LocalizationController {
 
     private void loadBundles() {
         bundles.clear();
-        Stream.of(RIGHT_TOOLBAR_BUNDLE, INDEX_FILE_SELECTOR_BUNDLE, NODE_FILE_SELECTOR_BUNDLE,
+        Stream.of(RIGHT_TOOLBAR_BUNDLE, LEFT_TOOLBAR_BUNDLE, INDEX_FILE_SELECTOR_BUNDLE, NODE_FILE_SELECTOR_BUNDLE,
                   ERROR_DIALOG_BUNDLE, WARNING_DIALOG_BUNDLE, MODEL_FILES_PICKER_BUNDLE,
                   STRESS_DIALOG_BUNDLE, VERTEX_INFO_BUNDLE, COLOR_PICKER_BUNDLE, DEFORMATION_DIALOG_BUNDLE,
                   LEGEND_BUNDLE, MESH_PAGE_BUNDLE, MESH_FILE_PICKER_BUNDLE, MESH_PROGRESS_DIALOG_BUNDLE)
