@@ -5,7 +5,9 @@ import javafx.scene.input.ScrollEvent;
 import lombok.Getter;
 import lombok.Setter;
 import org.cmps.tetrahedron.enums.VerticeMoveMode;
+import org.cmps.tetrahedron.enums.ViewPreset;
 import org.cmps.tetrahedron.view.model.component.InfoPanel;
+import org.joml.Matrix3f;
 
 public class MouseController {
 
@@ -22,7 +24,30 @@ public class MouseController {
     private double deltaX = 0;
     private double deltaY = 0;
 
+    /**
+     * Orientation selected with a view button. Mouse rotation is applied on top of it.
+     */
+    private final Matrix3f viewRotation = new Matrix3f(ViewPreset.TOP.getRotation());
+
     private MouseController() {
+    }
+
+    /**
+     * Switches the camera to one of the standard views and drops the rotation made with the mouse.
+     */
+    public void setView(ViewPreset viewPreset) {
+        viewRotation.set(viewPreset.getRotation());
+        deltaX = 0;
+        deltaY = 0;
+    }
+
+    /**
+     * Current model rotation: selected view rotated by the mouse (around screen axes).
+     */
+    public Matrix3f getRotation(Matrix3f dest) {
+        return dest.rotationY(getX())
+                   .rotateX(getY())
+                   .mul(viewRotation);
     }
 
     public void mouseReleased(MouseEvent mouseEvent) {

@@ -9,6 +9,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 import org.joml.Matrix3f;
+import org.joml.Matrix3fc;
 import org.joml.Vector3f;
 
 import java.util.Arrays;
@@ -31,9 +32,7 @@ public class AxesGizmo extends Canvas {
     private static final Color Y_COLOR = Color.web("#188038");
     private static final Color Z_COLOR = Color.web("#1A56DB");
 
-    private final Matrix3f rotation = new Matrix3f();
-    private float lastRotX = Float.NaN;
-    private float lastRotY = Float.NaN;
+    private final Matrix3f lastRotation = new Matrix3f().zero();
 
     public AxesGizmo() {
         super(SIZE, SIZE);
@@ -41,16 +40,13 @@ public class AxesGizmo extends Canvas {
     }
 
     /**
-     * Redraws the gizmo for the given model rotation (same angles as passed to ModelRenderer).
+     * Redraws the gizmo for the given model rotation (the same one ModelRenderer uses).
      */
-    public void update(float rotX, float rotY) {
-        if (rotX == lastRotX && rotY == lastRotY) {
+    public void update(Matrix3fc rotation) {
+        if (lastRotation.equals(rotation)) {
             return;
         }
-        lastRotX = rotX;
-        lastRotY = rotY;
-
-        rotation.identity().rotateY(rotX).rotateX(rotY);
+        lastRotation.set(rotation);
 
         Axis[] axes = {
                 new Axis("X", X_COLOR, rotation.transform(new Vector3f(1, 0, 0))),
@@ -71,10 +67,9 @@ public class AxesGizmo extends Canvas {
         double cy = SIZE / 2;
 
         for (Axis axis : axes) {
-            // The GL frame is copied to the JavaFX image without a vertical flip
-            // (glReadPixels rows go bottom-up), so view-space +Y ends up pointing down on screen.
+            // View-space +Y points up on screen, canvas Y points down.
             double dx = axis.dir.x;
-            double dy = axis.dir.y;
+            double dy = -axis.dir.y;
             double ex = cx + dx * AXIS_LENGTH;
             double ey = cy + dy * AXIS_LENGTH;
 

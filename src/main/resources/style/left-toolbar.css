@@ -1,7 +1,7 @@
 
 .instrument-sidebar {
-    -fx-padding: 32px 17px;
-    -fx-spacing: 18px;
+    -fx-padding: 16px 17px;
+    -fx-spacing: 10px;
     -fx-background-color: #E7EDF2;
     -fx-background-radius: 12px;
     -fx-border-radius: 12px;
@@ -62,4 +62,21 @@
 
 .button-selected:hover > .button {
     -fx-stroke: #FAFCFE;
+}
+
+/* View icons: the face the model is looked at from is shaded */
+.view-icon {
+    -fx-fill: rgba(14, 14, 14, 0.35);
+}
+
+.button:hover > .view-icon {
+    -fx-fill: rgba(250, 252, 254, 0.55);
+}
+
+.toolbar-separator {
+    -fx-min-height: 1px;
+    -fx-max-height: 1px;
+    -fx-min-width: 26px;
+    -fx-max-width: 26px;
+    -fx-background-color: #B4C0CC;
 }

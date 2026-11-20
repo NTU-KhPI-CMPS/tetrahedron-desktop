@@ -11,6 +11,7 @@ import javafx.scene.control.Tooltip;
 import org.cmps.tetrahedron.controller.LocalizationController;
 import org.cmps.tetrahedron.controller.MouseController;
 import org.cmps.tetrahedron.enums.VerticeMoveMode;
+import org.cmps.tetrahedron.enums.ViewPreset;
 import org.cmps.tetrahedron.model.ModelViewSettings;
 import org.cmps.tetrahedron.view.model.ColorPickerDialog;
 
@@ -25,6 +26,16 @@ public class BaseLeftTolBar {
     @FXML
     private Button leftRight;
     @FXML
+    private Button viewFront;
+    @FXML
+    private Button viewTop;
+    @FXML
+    private Button viewRight;
+    @FXML
+    private Button viewLeft;
+    @FXML
+    private Button viewIsometric;
+    @FXML
     public Button colorPicker;
 
     @FXML
@@ -37,6 +48,11 @@ public class BaseLeftTolBar {
         setTooltip(leftRight, "rotate-left-right");
         setTooltip(colorPicker, "colors");
         setTooltip(publicationMode, "publication-mode");
+        setTooltip(viewFront, "view-front");
+        setTooltip(viewTop, "view-top");
+        setTooltip(viewRight, "view-right");
+        setTooltip(viewLeft, "view-left");
+        setTooltip(viewIsometric, "view-isometric");
 
         // toggle button: don't take focus on click, otherwise ":focused" style keeps it highlighted when mode is off
         publicationMode.setFocusTraversable(false);
@@ -105,6 +121,31 @@ public class BaseLeftTolBar {
         focus(leftRight);
         unFocus(topBottom);
         unFocus(cursor);
+    }
+
+    @FXML
+    public void clickOnViewFront() {
+        mouseController.setView(ViewPreset.FRONT);
+    }
+
+    @FXML
+    public void clickOnViewTop() {
+        mouseController.setView(ViewPreset.TOP);
+    }
+
+    @FXML
+    public void clickOnViewRight() {
+        mouseController.setView(ViewPreset.RIGHT);
+    }
+
+    @FXML
+    public void clickOnViewLeft() {
+        mouseController.setView(ViewPreset.LEFT);
+    }
+
+    @FXML
+    public void clickOnViewIsometric() {
+        mouseController.setView(ViewPreset.ISOMETRIC);
     }
 
     @FXML

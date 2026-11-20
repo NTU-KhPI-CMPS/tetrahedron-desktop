@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.*?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="org.cmps.tetrahedron.view.common.BaseLeftTolBar"
@@ -26,6 +26,40 @@
             <fx:include source="/icon/LeftRight.fxml"/>
         </graphic>
     </Button>
+
+    <Region styleClass="toolbar-separator"/>
+
+    <Button styleClass="button" fx:id="viewFront" focusTraversable="false" onMouseClicked="#clickOnViewFront">
+        <graphic>
+            <fx:include source="/icon/ViewFront.fxml"/>
+        </graphic>
+    </Button>
+
+    <Button styleClass="button" fx:id="viewTop" focusTraversable="false" onMouseClicked="#clickOnViewTop">
+        <graphic>
+            <fx:include source="/icon/ViewTop.fxml"/>
+        </graphic>
+    </Button>
+
+    <Button styleClass="button" fx:id="viewRight" focusTraversable="false" onMouseClicked="#clickOnViewRight">
+        <graphic>
+            <fx:include source="/icon/ViewRight.fxml"/>
+        </graphic>
+    </Button>
+
+    <Button styleClass="button" fx:id="viewLeft" focusTraversable="false" onMouseClicked="#clickOnViewLeft">
+        <graphic>
+            <fx:include source="/icon/ViewLeft.fxml"/>
+        </graphic>
+    </Button>
+
+    <Button styleClass="button" fx:id="viewIsometric" focusTraversable="false" onMouseClicked="#clickOnViewIsometric">
+        <graphic>
+            <fx:include source="/icon/ViewIsometric.fxml"/>
+        </graphic>
+    </Button>
+
+    <Region styleClass="toolbar-separator"/>
 
     <Button styleClass="button" fx:id="colorPicker" onMouseClicked="#clickOnColorPicker">
         <graphic>

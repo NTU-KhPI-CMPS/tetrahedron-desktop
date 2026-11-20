@@ -12,6 +12,7 @@ import org.cmps.tetrahedron.config.CanvasProperties;
 import org.cmps.tetrahedron.controller.ModelController;
 import org.cmps.tetrahedron.controller.MouseController;
 import org.cmps.tetrahedron.utils.NativesExtractor;
+import org.joml.Matrix3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.Configuration;
@@ -40,6 +41,7 @@ public class ModelView extends Pane {
     private static ByteBuffer buffer;
     private static PixelBuffer<ByteBuffer> pixelBuffer;
     private static PerformanceTracker performanceTracker;
+    private static final Matrix3f rotation = new Matrix3f();
 
     public ModelView() {
         Label label = new Label();
@@ -85,7 +87,7 @@ public class ModelView extends Pane {
 
                 MouseController mouseController = MouseController.getInstance();
                 axesGizmo.setVisible(ModelController.getInstance().hasModel());
-                axesGizmo.update(mouseController.getX(), mouseController.getY());
+                axesGizmo.update(mouseController.getRotation(rotation));
 
                 if (performanceTracker != null) {
                     label.setText(String.format(

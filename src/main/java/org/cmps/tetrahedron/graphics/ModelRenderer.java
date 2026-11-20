@@ -10,6 +10,7 @@ import org.cmps.tetrahedron.model.Model;
 import org.cmps.tetrahedron.model.ModelViewSettings;
 import org.cmps.tetrahedron.utils.CoordinatesConvertor;
 import org.cmps.tetrahedron.viewmodel.DimensionViewModel;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -50,6 +51,7 @@ public class ModelRenderer {
     private final Matrix4f modelMatrix = new Matrix4f();
     private final Matrix4f viewMatrix = new Matrix4f();
     private final Matrix4f projMatrix = new Matrix4f();
+    private final Matrix3f rotation = new Matrix3f();
 
     private final MouseController mouseController = MouseController.getInstance();
     private final FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
@@ -81,7 +83,7 @@ public class ModelRenderer {
         glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        updateMatrix(mouseController.getZoomFactor(), mouseController.getX(), mouseController.getY());
+        updateMatrix(mouseController.getZoomFactor(), mouseController.getRotation(rotation));
         renderModel();
 
         VertexInfoController vertexInfoController = VertexInfoController.getInstance();
@@ -127,15 +129,13 @@ public class ModelRenderer {
                 + vecA / (255.0f * 255.0f * 255.0f);
     }
 
-    private void updateMatrix(float zoomFactor, float x, float y) {
+    private void updateMatrix(float zoomFactor, Matrix3f rotation) {
         Model model = ModelController.getInstance().getModel();
         if (model.getVertices().isEmpty()) {
             return;
         }
 
-        modelMatrix.identity()
-                   .rotateY(x)
-                   .rotateX(y)
+        modelMatrix.set(rotation)
                    .translate(model.getCenter());
 
         float eyeZ = zoomFactor * model.getRadius();
@@ -145,7 +145,10 @@ public class ModelRenderer {
         Vector4f min = new Vector4f(model.getMin(), 1);
         Vector4f max = new Vector4f(model.getMax(), 1);
         Vector2f planes = getPlanes(min, max, modelMatrix, viewMatrix);
-        projMatrix.setPerspective(45f, aspectRatio, planes.x, planes.y);
+        projMatrix.setPerspective(45f, aspectRatio, planes.x, planes.y)
+                  // The frame is read with glReadPixels (rows bottom-up) and shown as is (rows top-down),
+                  // so render it upside down to get it upright on screen instead of mirrored.
+                  .scaleLocal(1f, -1f, 1f);
     }
 
     private Vector2f getPlanes(Vector4f min, Vector4f max, Matrix4f modelMatrix, Matrix4f viewMatrix) {

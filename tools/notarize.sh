@@ -2,7 +2,7 @@
 
 set -e
 
-CERT_NAME=""
+CERT_NAME="Developer ID Application: Mariia Borodin (JLF95L7BQ2)"
 APP_VERSION="7.3.0"
 
 cd ../dist

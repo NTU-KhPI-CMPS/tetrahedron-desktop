@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.shape.SVGPath?>
+<SVGPath content="M1 7H15V21H1Z
+                      M1 7L7 1M7 1H21M15 7L21 1M21 1V15M15 21L21 15"
+         strokeWidth="1.2"
+         strokeLineCap="ROUND"
+         strokeLineJoin="ROUND"
+         styleClass="button, view-icon"/>
