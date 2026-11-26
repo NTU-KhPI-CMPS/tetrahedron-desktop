@@ -43,7 +43,7 @@ out vec4 color;
 
 vec3 calculateLighting(vec3 color) {
 
-    vec3 lightDirection = normalize(vec3(0.0, 0.5, -1));
+    vec3 lightDirection = normalize(vec3(0.0, 0.5, 1));
 
     vec3 normal = normalize((modelMatrix * vec4(triangleNormal, 0.0)).xyz);
     vec3 viewLightDirection = normalize((viewMatrix * vec4(lightDirection, 0.0)).xyz);
